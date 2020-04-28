@@ -65,15 +65,8 @@ ISimpleTransform::Status ISimpleTransform::prepare()
         has_input = true;
 
         if (input_data.exception)
-        {
-            /// Skip transform in case of exception.
-            input_data.swap(output_data);
-            has_input = false;
-            has_output = true;
-
             /// No more data needed. Exception will be thrown (or swallowed) later.
             input.setNotNeeded();
-        }
     }
 
     /// Now transform.
@@ -83,7 +76,13 @@ ISimpleTransform::Status ISimpleTransform::prepare()
 void ISimpleTransform::work()
 {
     if (input_data.exception)
+    {
+        /// Skip transform in case of exception.
+        input_data.swap(output_data);
+        has_input = false;
+        has_output = true;
         return;
+    }
 
     try
     {
