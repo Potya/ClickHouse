@@ -264,7 +264,7 @@ public:
     using Selector = PaddedPODArray<ColumnIndex>;
     virtual std::vector<MutablePtr> scatter(ColumnIndex num_columns, const Selector & selector) const = 0;
 
-    virtual void scatter(ColumnIndex num_columns, const Selector & selector, std::vector<ColumnPtr> & res_columns) const
+    virtual void scatter(ColumnIndex num_columns, const Selector & selector, std::vector<Ptr> & res_columns) const
     {
         auto columns = scatter(num_columns, selector);
         res_columns.clear();
@@ -400,7 +400,7 @@ protected:
     template <typename Derived>
     std::vector<MutablePtr> scatterImpl(ColumnIndex num_columns, const Selector & selector) const;
     template <typename Derived>
-    void scatterImplInplace(ColumnIndex num_columns, const Selector & selector, std::vector<ColumnPtr> & res_columns) const;
+    void scatterImplInplace(ColumnIndex num_columns, const Selector & selector, std::vector<Ptr> & res_columns) const;
 };
 
 using ColumnPtr = IColumn::Ptr;

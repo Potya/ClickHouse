@@ -46,7 +46,7 @@ std::vector<IColumn::MutablePtr> IColumn::scatterImpl(ColumnIndex num_columns, c
 }
 
 template <typename Derived>
-void IColumn::scatterImplInplace(ColumnIndex num_columns, const Selector & selector, std::vector<ColumnPtr> & res_columns) const
+void IColumn::scatterImplInplace(ColumnIndex num_columns, const Selector & selector, std::vector<IColumn::Ptr> & res_columns) const
 {
     size_t num_rows = size();
 
