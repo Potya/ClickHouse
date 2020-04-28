@@ -77,32 +77,33 @@ static void splitChunk(const Chunk & chunk, IColumn::Selector & selector, size_t
     const auto & columns = chunk.getColumns();
     result_chunks.resize(num_outputs);
 
-    bool first = true;
-    for (const auto & column : columns)
+    std::vector<Columns> res_columns;
+    res_columns.reserve(num_outputs);
+
+    for (auto & res_chunk : result_chunks)
     {
-        auto scatter = column->scatter(num_outputs, selector);
+        res_columns.emplace_back(res_chunk.detachColumns());
+        res_columns.back().resize(columns.size());
+    }
 
-        if (first)
-        {
-            first = false;
+    Columns scatter;
+    scatter.resize(num_outputs);
 
-            for (size_t i = 0; i < num_outputs; ++i)
-            {
-                size_t num_rows = scatter[i]->size();
-                auto & result_chunk = result_chunks[i];
-                auto res_columns = result_chunk.detachColumns();
-                res_columns.clear();
-                res_columns.reserve(num_outputs);
-                res_columns.emplace_back(std::move(scatter[i]));
+    for (size_t column_num = 0; column_num < columns.size(); ++column_num)
+    {
+        for (size_t output_num = 0; output_num < num_outputs; ++output_num)
+            scatter[output_num].swap(res_columns[output_num][column_num]);
 
-                result_chunk.setColumns(std::move(res_columns), num_rows);
-            }
-        }
-        else
-        {
-            for (size_t i = 0; i < num_outputs; ++i)
-                result_chunks[i].addColumn(std::move(scatter[i]));
-        }
+        columns[column_num]->scatter(num_outputs, selector, scatter);
+
+        for (size_t output_num = 0; output_num < num_outputs; ++output_num)
+            scatter[output_num].swap(res_columns[output_num][column_num]);
+    }
+
+    for (size_t output_num = 0; output_num < num_outputs; ++output_num)
+    {
+        size_t num_rows = res_columns[output_num].front()->size();
+        result_chunks[output_num].setColumns(std::move(res_columns[output_num]), num_rows);
     }
 }
 

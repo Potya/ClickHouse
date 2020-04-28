@@ -76,6 +76,12 @@ public:
 
     MutableColumnPtr cloneResized(size_t to_size) const override;
 
+    void clear() override
+    {
+        offsets.clear();
+        chars.clear();
+    }
+
     Field operator[](size_t n) const override
     {
         assert(n < size());
@@ -233,6 +239,11 @@ public:
     MutableColumns scatter(ColumnIndex num_columns, const Selector & selector) const override
     {
         return scatterImpl<ColumnString>(num_columns, selector);
+    }
+
+    void scatter(ColumnIndex num_columns, const Selector & selector, Columns & res_columns) const override
+    {
+        scatterImplInplace<ColumnString>(num_columns, selector, res_columns);
     }
 
     void gather(ColumnGathererStream & gatherer_stream) override;
